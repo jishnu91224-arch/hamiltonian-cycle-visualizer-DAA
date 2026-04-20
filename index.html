@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hamiltonian Cycle • Backtracking Visualization</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500&amp;family=Space+Grotesk:wght@500&amp;display=swap');
+
+        body {
+            font-family: 'Inter', system_ui, sans-serif;
+        }
+
+        .title-font {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        #graph {
+            filter: drop-shadow(0 25px 25px rgb(16 185 129 / 0.2));
+        }
+
+        .log-entry {
+            animation: fadeIn 0.3s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .vertex-label {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+</head>
+
+<body class="bg-zinc-950 text-white">
+    <div class="max-w-screen-2xl mx-auto flex flex-col min-h-screen">
+        <!-- Header -->
+        <div class="border-b border-white/10 bg-zinc-900/70 backdrop-blur-lg sticky top-0 z-50">
+            <div class="px-4 md:px-8 py-4 flex flex-col xl:flex-row items-center justify-between gap-y-4">
+                <div class="flex items-center gap-x-3 w-full xl:w-auto justify-center xl:justify-start">
+                    <div
+                        class="w-9 h-9 bg-emerald-500 rounded-2xl flex items-center justify-center shadow-inner text-zinc-950 font-bold shrink-0">
+                        H
+                    </div>
+                    <h1 class="title-font text-2xl md:text-3xl tracking-[-1px] font-medium shrink-0">Hamiltonian Cycle
+                    </h1>
+                    <span
+                        class="hidden md:inline-block px-3 py-1 text-[10px] md:text-xs font-medium bg-emerald-500/10 text-emerald-400 rounded-3xl border border-emerald-500/30 shrink-0">Backtracking
+                        Animation</span>
+                </div>
+
+                <div class="flex flex-wrap items-center justify-center gap-4 text-xs md:text-sm">
+                    <div class="hidden md:flex items-center gap-x-2 shrink-0">
+                        <div class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                        <span class="font-medium">Live Demo</span>
+                    </div>
+                    <a href="#" onclick="showInfo()"
+                        class="flex items-center gap-x-1.5 text-zinc-400 hover:text-white transition-colors shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 01-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span>How it works</span>
+                    </a>
+                    <a href="#" onclick="showTheory()"
+                        class="flex items-center gap-x-1.5 text-zinc-400 hover:text-white transition-colors border-l border-white/10 pl-4 shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <span>Theory & Analysis</span>
+                    </a>
+                </div>
+
+                <div class="flex items-center gap-x-4 w-full xl:w-auto justify-center xl:justify-end mt-2 xl:mt-0">
+                    <div onclick="resetVisualization()"
+                        class="flex items-center gap-x-2 px-4 h-9 bg-white/10 hover:bg-white/20 rounded-3xl text-xs md:text-sm font-medium cursor-pointer transition-all active:scale-95">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.058 11H1M12 3v2m0 16v2m9-9H15m-6 0a8 8 0 01-7.714-6.314" />
+                        </svg>
+                        RESET
+                    </div>
+                    <div onclick="openGraphEditor()"
+                        class="text-zinc-400 hover:text-white cursor-pointer text-xs md:text-sm flex items-center gap-x-1 border-l border-white/10 pl-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                        </svg>
+                        <span>Edit Graph</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex flex-col xl:flex-row flex-1">
+            <!-- Canvas Container -->
+            <div
+                class="flex-1 flex flex-col items-center justify-center p-4 md:p-8 bg-[#0a0a0a] relative overflow-hidden min-h-[50vh] xl:min-h-0">
+                <div
+                    class="absolute top-4 left-4 md:top-8 md:left-8 bg-zinc-900/90 backdrop-blur-md border border-white/10 rounded-3xl px-3 md:px-5 py-2 md:py-3 text-xs md:text-sm flex items-center gap-x-3 md:gap-x-8 z-10 max-w-[calc(100%-2rem)]">
+                    <div class="flex items-center gap-x-2 shrink-0">
+                        <div class="w-2 h-2 md:w-3 md:h-3 bg-emerald-400 rounded-full"></div>
+                        <span class="font-medium hidden sm:inline">Current Path</span>
+                        <span class="font-medium sm:hidden">Path</span>
+                    </div>
+                    <div id="path-progress"
+                        class="flex items-center text-emerald-300 font-mono text-sm md:text-lg overflow-x-auto custom-scroll">
+                    </div>
+                </div>
+
+                <canvas id="graph" width="720" height="620"
+                    class="bg-transparent max-w-full h-auto object-contain"></canvas>
+
+                <!-- Status Overlay -->
+                <div id="status-overlay" onclick="if(!isRunning) this.classList.add('hidden')"
+                    class="hidden absolute bottom-4 md:bottom-8 left-1/2 -translate-x-1/2 bg-emerald-600 text-white text-xs md:text-sm font-medium px-4 md:px-6 py-2 md:py-0 md:h-11 rounded-3xl shadow-2xl flex items-center gap-x-2 transition-all w-[90%] sm:w-auto justify-center">
+                    <div class="w-2 h-2 bg-white rounded-full animate-ping shrink-0"></div>
+                    <span class="truncate">BACKTRACKING IN PROGRESS...</span>
+                    <span id="step-counter"
+                        class="ml-1 md:ml-3 font-mono bg-white/20 px-2 md:px-3 rounded-3xl text-[10px] md:text-xs py-px shrink-0"></span>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div
+                class="w-full xl:w-96 bg-zinc-900 border-t xl:border-t-0 xl:border-l border-white/10 flex flex-col shrink-0">
+
+                <!-- Controls -->
+                <div class="p-6 border-b border-white/10">
+                    <h2 class="text-emerald-400 text-xs tracking-[1px] font-medium mb-4">CONTROLS</h2>
+
+                    <div class="space-y-6">
+                        <!-- Start Vertex -->
+                        <div>
+                            <label class="text-xs text-zinc-400 block mb-2">STARTING VERTEX</label>
+                            <div class="flex gap-2" id="start-buttons">
+                                <!-- Populated by JS -->
+                            </div>
+                        </div>
+
+                        <!-- Speed -->
+                        <div>
+                            <div class="flex justify-between text-xs text-zinc-400 mb-2">
+                                <span>ANIMATION SPEED</span>
+                                <span id="speed-value" class="font-mono text-emerald-300">750 ms</span>
+                            </div>
+                            <input type="range" id="speed-slider" min="150" max="1500" value="750" step="50"
+                                class="w-full accent-emerald-400 cursor-pointer">
+                            <div class="flex justify-between text-[10px] text-zinc-500 mt-1">
+                                <span>FAST</span>
+                                <span>SLOW</span>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="grid grid-cols-2 gap-3">
+                            <button onclick="startVisualization('backtracking')"
+                                class="h-11 bg-emerald-500 text-zinc-950 hover:bg-emerald-600 active:scale-[0.97] transition-all font-semibold rounded-3xl flex items-center justify-center gap-x-2 text-[10px] sm:text-xs tracking-wide shadow-inner">
+                                BACKTRACKING
+                            </button>
+
+                            <button onclick="startVisualization('dp')"
+                                class="h-11 bg-blue-500 text-zinc-950 hover:bg-blue-600 active:scale-[0.97] transition-all font-semibold rounded-3xl flex items-center justify-center gap-x-2 text-[10px] sm:text-xs tracking-wide shadow-inner">
+                                DP (HELD-KARP)
+                            </button>
+
+                            <button onclick="stopVisualization()"
+                                class="col-span-2 h-10 bg-zinc-800 hover:bg-red-500/80 active:scale-[0.97] transition-all font-semibold rounded-3xl flex items-center justify-center gap-x-2 text-sm tracking-wide">
+                                STOP
+                            </button>
+                        </div>
+
+                        <div class="text-[10px] text-zinc-500 flex items-center gap-x-2">
+                            <span class="bg-amber-400 text-black px-1.5 rounded">5 VERTICES</span>
+                            <span class="flex-1 h-px bg-white/10"></span>
+                            <span>Graph has a valid cycle • Backtracking will find it</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Current Path -->
+                <div class="px-6 pt-6">
+                    <h2
+                        class="text-emerald-400 text-xs tracking-[1px] font-medium mb-3 flex items-center justify-between">
+                        <span>CURRENT PATH</span>
+                        <span id="path-length" class="text-zinc-400 font-mono text-xs">0 / 5</span>
+                    </h2>
+                    <div id="current-path-display"
+                        class="min-h-[68px] bg-black/40 border border-white/10 rounded-3xl p-4 flex items-center gap-x-3 font-mono text-2xl overflow-x-auto">
+                    </div>
+                </div>
+
+                <!-- Adjacency Matrix -->
+                <div class="px-6 pt-6">
+                    <h2 class="text-emerald-400 text-xs tracking-[1px] font-medium mb-3">ADJACENCY MATRIX</h2>
+                    <div class="bg-black/60 rounded-3xl p-4 text-xs font-mono overflow-auto" id="adj-matrix">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Activity Log -->
+                <div class="flex-1 flex flex-col min-h-[300px] xl:min-h-0 px-6 pt-6 border-t border-white/10 mt-auto">
+                    <div class="flex justify-between items-baseline mb-3">
+                        <h2 class="text-emerald-400 text-xs tracking-[1px] font-medium">BACKTRACKING LOG</h2>
+                        <button onclick="clearLog()"
+                            class="text-zinc-400 hover:text-white text-xs flex items-center gap-x-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
+                                    d="M6 18L18 6M6 6h12v12" />
+                            </svg>
+                            CLEAR
+                        </button>
+                    </div>
+
+                    <div id="log"
+                        class="flex-1 bg-black/70 rounded-3xl p-5 text-xs font-mono overflow-y-auto leading-relaxed space-y-3 text-zinc-300 custom-scroll">
+                    </div>
+                </div>
+
+                <!-- Footer info -->
+                <div
+                    class="text-[10px] text-zinc-500 px-6 py-4 border-t border-white/10 flex items-center justify-between">
+                    <div>Backtracking explores every possible path</div>
+                    <div class="flex items-center gap-x-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-emerald-400" viewBox="0 0 20 20"
+                            fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        Prunes invalid branches instantly
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Modal -->
+    <div onclick="if(event.target.id === 'info-modal') hideInfo()" id="info-modal"
+        class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-[9999] flex items-center justify-center p-4"
+        style="z-index: 10000;">
+        <div onclick="event.stopImmediatePropagation()"
+            class="w-full max-w-2xl bg-zinc-900 rounded-3xl p-8 text-sm border border-white/10 shadow-2xl">
+            <h2 class="title-font text-2xl mb-6 text-white border-b border-white/10 pb-4">How the Algorithms Work</h2>
+
+            <div class="flex gap-x-4 mb-6 border-b border-white/10 pb-4">
+                <button onclick="switchInfoTab('backtrack')" id="tab-backtrack"
+                    class="font-medium text-emerald-400 bg-white/5 px-4 py-2 rounded-2xl">Backtracking</button>
+                <button onclick="switchInfoTab('dp')" id="tab-dp"
+                    class="font-medium text-zinc-500 hover:text-white px-4 py-2 rounded-2xl transition-colors">Dynamic
+                    Programming</button>
+            </div>
+
+            <div id="info-backtrack" class="space-y-6 text-zinc-300">
+                <div class="flex gap-4">
+                    <div
+                        class="w-6 h-6 bg-emerald-400 text-black font-bold rounded-2xl flex items-center justify-center flex-shrink-0">
+                        1</div>
+                    <div>
+                        <strong class="block">Start at vertex 0</strong>
+                        <p class="text-xs">Mark it as visited and add to path</p>
+                    </div>
+                </div>
+                <div class="flex gap-4">
+                    <div
+                        class="w-6 h-6 bg-emerald-400 text-black font-bold rounded-2xl flex items-center justify-center flex-shrink-0">
+                        2</div>
+                    <div>
+                        <strong class="block">Try next vertex</strong>
+                        <p class="text-xs">Check if it is adjacent to the last vertex in path <span
+                                class="font-mono text-emerald-400">&amp;</span> not yet visited</p>
+                    </div>
+                </div>
+                <div class="flex gap-4">
+                    <div
+                        class="w-6 h-6 bg-emerald-400 text-black font-bold rounded-2xl flex items-center justify-center flex-shrink-0">
+                        3</div>
+                    <div>
+                        <strong class="block">Recursion</strong>
+                        <p class="text-xs">If valid → add to path and recurse</p>
+                    </div>
+                </div>
+                <div class="flex gap-4">
+                    <div
+                        class="w-6 h-6 bg-red-400 text-black font-bold rounded-2xl flex items-center justify-center flex-shrink-0">
+                        4</div>
+                    <div>
+                        <strong class="block">Dead end?</strong>
+                        <p class="text-xs">Backtrack: remove last vertex and try next candidate</p>
+                    </div>
+                </div>
+                <div class="flex gap-4">
+                    <div
+                        class="w-6 h-6 bg-emerald-400 text-black font-bold rounded-2xl flex items-center justify-center flex-shrink-0">
+                        5</div>
+                    <div>
+                        <strong class="block">Base case</strong>
+                        <p class="text-xs">When all <span class="font-mono text-emerald-400">N</span> vertices are
+                            visited → check if we can return to start</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="info-dp" class="space-y-6 text-zinc-300 hidden">
+                <div class="flex gap-4">
+                    <div
+                        class="w-6 h-6 bg-blue-400 text-black font-bold rounded-2xl flex items-center justify-center flex-shrink-0">
+                        1</div>
+                    <div>
+                        <strong class="block">State Definition</strong>
+                        <p class="text-xs">Define a subproblem using a subset of visited nodes (bitmask) and the last
+                            visited node.</p>
+                    </div>
+                </div>
+                <div class="flex gap-4">
+                    <div
+                        class="w-6 h-6 bg-blue-400 text-black font-bold rounded-2xl flex items-center justify-center flex-shrink-0">
+                        2</div>
+                    <div>
+                        <strong class="block">Base Case Initialization</strong>
+                        <p class="text-xs">Start with subsets containing only one node (the starting vertex), marking
+                            them as reachable.</p>
+                    </div>
+                </div>
+                <div class="flex gap-4">
+                    <div
+                        class="w-6 h-6 bg-blue-400 text-black font-bold rounded-2xl flex items-center justify-center flex-shrink-0">
+                        3</div>
+                    <div>
+                        <strong class="block">Building Up Subsets</strong>
+                        <p class="text-xs">Iteratively process sets of size 2, then 3, up to <span
+                                class="font-mono text-blue-400">N</span>. For a set, try appending a new unvisited
+                            connected node.</p>
+                    </div>
+                </div>
+                <div class="flex gap-4">
+                    <div
+                        class="w-6 h-6 bg-blue-400 text-black font-bold rounded-2xl flex items-center justify-center flex-shrink-0">
+                        4</div>
+                    <div>
+                        <strong class="block">Memoization</strong>
+                        <p class="text-xs">Store whether a mask is achievable. If overlapping paths reach the same state
+                            again, the saved result prevents exponential redundant work.</p>
+                    </div>
+                </div>
+                <div class="flex gap-4">
+                    <div
+                        class="w-6 h-6 bg-emerald-400 text-black font-bold rounded-2xl flex items-center justify-center flex-shrink-0">
+                        5</div>
+                    <div>
+                        <strong class="block">Cycle Verification</strong>
+                        <p class="text-xs">At size <span class="font-mono text-blue-400">N</span>, check if the last
+                            added node connects back to the start node to close the Hamiltonian Cycle.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 pt-6 border-t border-white/10 text-xs flex justify-end">
+                <button onclick="hideInfo()"
+                    class="px-6 py-2 bg-white text-zinc-900 rounded-3xl font-medium hover:bg-zinc-200 transition-colors">Got
+                    it, thanks!</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Graph Editor Modal -->
+    <div onclick="if(event.target.id === 'editor-modal') hideGraphEditor()" id="editor-modal"
+        class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-[9999] flex items-center justify-center p-4"
+        style="z-index: 10000;">
+        <div onclick="event.stopImmediatePropagation()"
+            class="w-full max-w-lg bg-zinc-900 rounded-3xl p-8 text-sm border border-white/10 shadow-2xl">
+            <h2 class="title-font text-2xl mb-2 text-white">Graph Editor</h2>
+            <p class="text-zinc-400 text-xs mb-6 pb-4 border-b border-white/10">Customize the number of vertices and
+                toggle connectivity pairs.</p>
+
+            <div class="space-y-6 text-zinc-300">
+                <div>
+                    <label class="block text-xs font-bold text-emerald-400 tracking-wider mb-3">NUMBER OF VERTICES:
+                        <span id="editor-n-display" class="text-white">5</span></label>
+                    <input type="range" id="editor-n-slider" min="3" max="8" value="5" step="1"
+                        class="w-full accent-emerald-400 cursor-pointer" oninput="updateEditorMatrix()">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-emerald-400 tracking-wider mb-3">TOGGLE EDGES</label>
+                    <div id="editor-matrix-container"
+                        class="bg-black/40 rounded-xl overflow-hidden border border-white/5 p-3 flex justify-center">
+                        <!-- Generated interactable matrix -->
+                    </div>
+                    <p class="text-[10px] text-zinc-500 mt-2 text-center">Click cells to connect/disconnect nodes.</p>
+                </div>
+            </div>
+
+            <div class="mt-8 flex justify-end gap-x-3">
+                <button onclick="hideGraphEditor()"
+                    class="px-5 py-2 text-zinc-400 hover:text-white transition-colors font-medium">Cancel</button>
+                <button onclick="applyCustomGraph()"
+                    class="px-6 py-2 bg-emerald-500 text-zinc-950 rounded-3xl font-bold hover:bg-emerald-600 transition-colors shadow-inner">Build
+                    Graph</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Theory Modal -->
+    <div onclick="if(event.target.id === 'theory-modal') hideTheory()" id="theory-modal"
+        class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-[9999] flex items-center justify-center p-4"
+        style="z-index: 10000;">
+        <div onclick="event.stopImmediatePropagation()"
+            class="w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-zinc-900 rounded-3xl p-8 text-sm custom-scroll border border-white/10 shadow-2xl">
+            <h2 class="title-font text-2xl mb-6 text-white border-b border-white/10 pb-4">Analysis: Backtracking vs
+                Dynamic Programming</h2>
+
+            <div class="space-y-8 text-zinc-300">
+                <section>
+                    <h3 class="text-emerald-400 font-bold mb-2">1. Backtracking vs Dynamic Programming</h3>
+                    <p class="leading-relaxed">Backtracking tackles the Hamiltonian Cycle problem by exploring paths
+                        step by step, retreating when stuck. Although straightforward, it often takes too long for large
+                        graphs because it checks nearly every possibility. In contrast, Dynamic Programming reduces
+                        repeated calculations through stored subproblem results. This method speeds things up but
+                        demands more memory to keep intermediate states. One trades time for space, depending on
+                        available resources. Efficiency shifts based on graph size and structure.</p>
+                </section>
+
+                <section>
+                    <h3 class="text-emerald-400 font-bold mb-2">2. Backtracking Approach</h3>
+                    <p class="leading-relaxed">Starting from one vertex, the algorithm tests every sequence by moving
+                        forward and retreating when needed. When a path includes disconnected nodes or duplicates, it is
+                        dropped immediately. Efficiency rises because dead ends are cut early - yet growth remains tied
+                        to input size exponentially. Its runtime expands rapidly with larger graphs.</p>
+                </section>
+
+                <section>
+                    <h3 class="text-blue-400 font-bold mb-2">3. Dynamic Programming Approach (Held–Karp Algorithm)</h3>
+                    <p class="leading-relaxed">Though often applied to the Travelling Salesman Problem, dynamic
+                        programming relies on memoization plus bitwise representation. Solving simpler cases first makes
+                        larger solutions possible through reuse. The method sidesteps repeated calculations by saving
+                        past outcomes. Since TSP involves finding optimal paths, it matches naturally with this strategy
+                        - especially when weights matter in cycles that visit every node once.</p>
+
+                    <div class="mt-4 bg-zinc-950 rounded-xl overflow-hidden border border-white/10">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-zinc-800 text-zinc-300">
+                                <tr>
+                                    <th class="p-3 font-medium border-r border-white/10">Parameter</th>
+                                    <th class="p-3 font-medium border-r border-white/10">Backtracking</th>
+                                    <th class="p-3 font-medium">Dynamic Programming</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-white/5">
+                                <tr>
+                                    <td class="p-3 font-medium text-white border-r border-white/10">Approach Type</td>
+                                    <td class="p-3 border-r border-white/10">Recursive, depth-first search</td>
+                                    <td class="p-3">Bottom-up with memoization</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3 font-medium text-white border-r border-white/10">Time Complexity</td>
+                                    <td class="p-3 font-mono text-emerald-400 border-r border-white/10">O(n!)</td>
+                                    <td class="p-3 font-mono text-blue-400">O(n² · 2ⁿ)</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3 font-medium text-white border-r border-white/10">Space Complexity
+                                    </td>
+                                    <td class="p-3 font-mono text-emerald-400 border-r border-white/10">O(n)</td>
+                                    <td class="p-3 font-mono text-blue-400">O(n · 2ⁿ)</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3 font-medium text-white border-r border-white/10">Efficiency</td>
+                                    <td class="p-3 border-r border-white/10">Lower</td>
+                                    <td class="p-3">Higher</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3 font-medium text-white border-r border-white/10">Scalability</td>
+                                    <td class="p-3 border-r border-white/10">Suitable for small graphs</td>
+                                    <td class="p-3">Suitable for moderate graphs</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3 font-medium text-white border-r border-white/10">Implementation</td>
+                                    <td class="p-3 border-r border-white/10">Simpler</td>
+                                    <td class="p-3">More complex</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3 font-medium text-white border-r border-white/10">Optimal Solution
+                                    </td>
+                                    <td class="p-3 border-r border-white/10">Yes</td>
+                                    <td class="p-3">Yes</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section>
+                    <h3 class="text-purple-400 font-bold mb-2">4. Analysis</h3>
+                    <p class="leading-relaxed">Backwards reasoning tends to be straightforward, requiring minimal
+                        storage space. Yet when applied to big networks, performance drops because more calculations are
+                        needed. What helps? Earlier results get saved, cutting down on repeated work. This shortcut
+                        slashes processing duration significantly.</p>
+                </section>
+            </div>
+
+            <div class="mt-8 pt-6 border-t border-white/10 text-xs flex justify-end">
+                <button onclick="hideTheory()"
+                    class="px-6 py-2 bg-white text-zinc-900 rounded-3xl font-medium hover:bg-zinc-200 transition-colors">Close
+                    Analysis</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== CONFIG ====================
+        let N = 5;
+        let adj = [
+            [false, true, false, true, true],  // 0
+            [true, false, true, false, true],  // 1
+            [false, true, false, true, false], // 2
+            [true, false, true, false, true],  // 3
+            [true, true, false, true, false]  // 4
+        ]
+
+        // Positions on canvas (circle layout)
+        let positions = []
+
+        // State
+        let path = new Array(N).fill(-1)
+        let hasCycle = false
+        let isRunning = false
+        let aborted = false
+        let speed = 750
+        let currentStart = 0
+        let stepCount = 0
+
+        let activeAlgorithm = 'none'
+        let currentDPMask = 0
+        let currentDPEdge = { i: -1, j: -1 }
+
+        // Canvas
+        let canvas, ctx
+
+        // ==================== HELPER FUNCTIONS ====================
+        function initPositions() {
+            positions = []
+            const centerX = 360
+            const centerY = 310
+            const radius = 210
+
+            for (let i = 0; i < N; i++) {
+                const angle = (2 * Math.PI * i) / N
+                positions.push({
+                    x: centerX + radius * Math.cos(angle),
+                    y: centerY + radius * Math.sin(angle)
+                })
+            }
+        }
+
+        function isSafe(v, pos) {
+            // Already in path?
+            for (let i = 0; i < pos; i++) {
+                if (path[i] === v) return false
+            }
+            // Edge exists?
+            if (!adj[path[pos - 1]][v]) return false
+            return true
+        }
+
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms))
+        }
+
+        // ==================== DRAWING ====================
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+            const pathLength = path.indexOf(-1) === -1 ? N : path.indexOf(-1)
+
+            // 1. Draw all possible edges (gray)
+            ctx.lineWidth = 3
+            for (let i = 0; i < N; i++) {
+                for (let j = i + 1; j < N; j++) {
+                    if (adj[i][j]) {
+                        ctx.strokeStyle = '#27272a'
+                        ctx.beginPath()
+                        ctx.moveTo(positions[i].x, positions[i].y)
+                        ctx.lineTo(positions[j].x, positions[j].y)
+                        ctx.stroke()
+                    }
+                }
+            }
+
+            if (activeAlgorithm === 'backtracking' || (!isRunning && activeAlgorithm !== 'dp') || hasCycle || (activeAlgorithm === 'dp' && hasCycle)) {
+                // Regular Path drawing
+                ctx.lineWidth = 6
+                ctx.strokeStyle = activeAlgorithm === 'dp' ? '#3b82f6' : '#10b981'
+                const glowColor = activeAlgorithm === 'dp' ? '#3b82f6' : '#10b981'
+                for (let i = 0; i < pathLength - 1; i++) {
+                    const u = path[i]
+                    const v = path[i + 1]
+                    ctx.shadowColor = glowColor
+                    ctx.shadowBlur = 15
+                    ctx.beginPath()
+                    ctx.moveTo(positions[u].x, positions[u].y)
+                    ctx.lineTo(positions[v].x, positions[v].y)
+                    ctx.stroke()
+                    ctx.shadowBlur = 0
+                }
+
+                if (hasCycle && pathLength === N) {
+                    ctx.shadowColor = glowColor
+                    ctx.shadowBlur = 25
+                    ctx.beginPath()
+                    ctx.moveTo(positions[path[N - 1]].x, positions[path[N - 1]].y)
+                    ctx.lineTo(positions[path[0]].x, positions[path[0]].y)
+                    ctx.stroke()
+                    ctx.shadowBlur = 0
+                }
+            } else if (activeAlgorithm === 'dp' && isRunning) {
+                // DP specific edge evaluation drawing
+                if (currentDPEdge.i !== -1 && currentDPEdge.j !== -1) {
+                    ctx.lineWidth = 6
+                    ctx.strokeStyle = '#8b5cf6' // Purple for DP evaluation
+                    ctx.shadowColor = '#8b5cf6'
+                    ctx.shadowBlur = 15
+                    ctx.beginPath()
+                    ctx.moveTo(positions[currentDPEdge.i].x, positions[currentDPEdge.i].y)
+                    ctx.lineTo(positions[currentDPEdge.j].x, positions[currentDPEdge.j].y)
+                    ctx.stroke()
+                    ctx.shadowBlur = 0
+                }
+            }
+
+            // 4. Draw vertices
+            for (let i = 0; i < N; i++) {
+                const pos = positions[i]
+
+                let isHighlighted = false;
+                let vertexColor = '#3b82f6';
+                let orderText = '';
+
+                if (activeAlgorithm === 'dp' && isRunning && !hasCycle) {
+                    if (currentDPMask & (1 << i)) {
+                        isHighlighted = true;
+                        vertexColor = '#3b82f6'; // Blue for DP visited mask
+                    }
+                    if (currentDPEdge.j === i) {
+                        isHighlighted = true;
+                        vertexColor = '#8b5cf6'; // Purple for target testing
+                    }
+                } else {
+                    const inPathIndex = path.indexOf(i)
+                    if (inPathIndex !== -1 && inPathIndex < pathLength) {
+                        isHighlighted = true;
+                        vertexColor = activeAlgorithm === 'dp' ? '#3b82f6' : '#10b981';
+                        orderText = (inPathIndex + 1).toString();
+                    }
+                }
+
+                if (isHighlighted) {
+                    ctx.shadowColor = vertexColor
+                    ctx.shadowBlur = 25
+                } else {
+                    ctx.shadowBlur = 0
+                }
+
+                ctx.fillStyle = isHighlighted ? vertexColor : '#27272a'
+                ctx.beginPath()
+                ctx.arc(pos.x, pos.y, 28, 0, Math.PI * 2)
+                ctx.fill()
+
+                ctx.fillStyle = '#fff'
+                ctx.beginPath()
+                ctx.arc(pos.x, pos.y, 18, 0, Math.PI * 2)
+                ctx.fill()
+
+                ctx.shadowBlur = 0
+                ctx.fillStyle = '#0a0a0a'
+                ctx.font = '700 22px Space Grotesk'
+                ctx.textAlign = 'center'
+                ctx.textBaseline = 'middle'
+                ctx.fillText(i.toString(), pos.x, pos.y + 2)
+
+                if (orderText !== '') {
+                    ctx.fillStyle = vertexColor
+                    ctx.font = '600 13px Inter'
+                    ctx.fillText(orderText, pos.x + 32, pos.y - 26)
+                }
+            }
+
+            // Update side panel path display
+            updatePathDisplay(pathLength)
+        }
+
+        function updatePathDisplay(pathLength) {
+            const container = document.getElementById('current-path-display')
+            container.innerHTML = ''
+
+            if (pathLength === 0) {
+                const empty = document.createElement('div')
+                empty.className = 'flex-1 flex items-center justify-center text-zinc-500 italic text-base'
+                empty.textContent = 'Path will appear here...'
+                container.appendChild(empty)
+                document.getElementById('path-length').textContent = `0 / ${N}`
+                return
+            }
+
+            const fragment = document.createDocumentFragment()
+
+            for (let i = 0; i < pathLength; i++) {
+                const node = document.createElement('div')
+                node.className = `flex-shrink-0 w-11 h-11 ${activeAlgorithm === 'dp' ? 'bg-blue-400' : 'bg-emerald-400'} text-zinc-950 rounded-2xl flex items-center justify-center font-bold text-2xl shadow-inner`
+                node.textContent = path[i]
+                fragment.appendChild(node)
+
+                // Arrow
+                if (i < pathLength - 1) {
+                    const arrow = document.createElement('div')
+                    arrow.className = `${activeAlgorithm === 'dp' ? 'text-blue-300' : 'text-emerald-300'} text-4xl mx-1`
+                    arrow.innerHTML = '→'
+                    fragment.appendChild(arrow)
+                }
+            }
+
+            // Closing arrow when cycle found
+            if (hasCycle && pathLength === N) {
+                const arrow = document.createElement('div')
+                arrow.className = `${activeAlgorithm === 'dp' ? 'text-blue-300' : 'text-emerald-300'} text-4xl mx-1`
+                arrow.innerHTML = '→'
+                fragment.appendChild(arrow)
+
+                const close = document.createElement('div')
+                close.className = `flex-shrink-0 w-11 h-11 ${activeAlgorithm === 'dp' ? 'bg-blue-400' : 'bg-emerald-400'} text-zinc-950 rounded-2xl flex items-center justify-center font-bold text-2xl shadow-inner`
+                close.textContent = path[0]
+                fragment.appendChild(close)
+            }
+
+            container.appendChild(fragment)
+            document.getElementById('path-length').textContent = `${pathLength} / ${N}`
+        }
+
+        // ==================== DYNAMIC PROGRAMMING ALGORITHM ====================
+        function popcount(n) {
+            let count = 0;
+            while (n) {
+                count += n & 1;
+                n >>= 1;
+            }
+            return count;
+        }
+
+        async function hamCycleDP(start) {
+            if (aborted || !isRunning) return false;
+
+            const MAX_MASK = 1 << N;
+            let dp = Array.from({ length: MAX_MASK }, () => Array(N).fill(-1));
+            dp[1 << start][start] = -2; // -2 means start of path
+
+            stepCount = 0;
+            log(`<span class="font-medium text-blue-400">Initializing DP table / Memoization...</span>`);
+
+            for (let length = 1; length <= N; length++) {
+                for (let mask = 1; mask < MAX_MASK; mask++) {
+                    if (!isRunning || aborted) return false;
+
+                    if (popcount(mask) !== length || !(mask & (1 << start))) continue;
+
+                    for (let i = 0; i < N; i++) {
+                        if (!(mask & (1 << i))) continue;
+
+                        if (dp[mask][i] !== -1) {
+                            for (let j = 0; j < N; j++) {
+                                if (!(mask & (1 << j)) && adj[i][j]) {
+                                    stepCount++;
+                                    document.getElementById('step-counter').textContent = `Step ${stepCount}`;
+
+                                    const nextMask = mask | (1 << j);
+                                    dp[nextMask][j] = i;
+
+                                    currentDPMask = mask;
+                                    currentDPEdge = { i, j };
+                                    draw();
+
+                                    log(`DP Mask: <span class="text-zinc-300 font-mono">${mask.toString(2).padStart(N, '0')}</span> | Edge cost evaluated: <span class="text-blue-300">${i} → ${j}</span>`);
+                                    await delay(speed);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            currentDPMask = 0;
+            currentDPEdge = { i: -1, j: -1 };
+
+            let lastNode = -1;
+            const fullMask = MAX_MASK - 1;
+            for (let i = 0; i < N; i++) {
+                if (dp[fullMask][i] !== -1 && adj[i][start]) {
+                    lastNode = i;
+                    break;
+                }
+            }
+
+            if (lastNode !== -1) {
+                hasCycle = true;
+                let curr = lastNode;
+                let mask = fullMask;
+                let cyclePath = [];
+                while (curr !== -2) {
+                    cyclePath.push(curr);
+                    let prev = dp[mask][curr];
+                    mask = mask ^ (1 << curr);
+                    curr = prev;
+                }
+                cyclePath.reverse();
+                path = cyclePath;
+                log(`<span class="text-blue-400 font-bold">CYCLE FOUND!</span> DP computed path: ${path.join(' → ')} → ${start}`, true);
+                draw();
+                return true;
+            }
+
+            draw();
+            return false;
+        }
+
+        // ==================== BACKTRACKING ALGORITHM ====================
+        async function hamCycle(pos) {
+            if (aborted || !isRunning) return false
+
+            stepCount++
+            document.getElementById('step-counter').textContent = `Step ${stepCount}`
+
+            draw()
+            await delay(speed)
+
+            // Base case: all vertices visited
+            if (pos === N) {
+                if (adj[path[pos - 1]][path[0]]) {
+                    hasCycle = true
+                    log(`<span class="text-emerald-400 font-bold">CYCLE FOUND!</span> ${path.join(' → ')} → ${path[0]}`, true)
+                    draw()
+                    return true
+                }
+                return false
+            }
+
+            // Try every possible vertex
+            for (let v = 0; v < N; v++) {
+                if (isSafe(v, pos)) {
+                    path[pos] = v
+
+                    // Log attempt
+                    log(`Trying <span class="text-emerald-400 font-medium">${v}</span> at position ${pos} 
+                         <span class="text-zinc-400">(${path.slice(0, pos + 1).join(' → ')})</span>`)
+
+                    // Recurse
+                    const found = await hamCycle(pos + 1)
+
+                    if (found) return true
+
+                    // Backtrack
+                    path[pos] = -1
+                    log(`<span class="text-red-400">↩ Backtracked from ${v}</span>`, false)
+                    draw()
+                    await delay(Math.max(speed / 2, 120))
+                }
+            }
+
+            return false
+        }
+
+        // ==================== UI LOGGING ====================
+        function log(message, isSuccess = false) {
+            const logContainer = document.getElementById('log')
+            const entry = document.createElement('div')
+            entry.className = `log-entry flex items-start gap-x-3 text-xs ${isSuccess ? 'border-l-2 border-emerald-400 pl-2' : ''}`
+            entry.innerHTML = `
+                <span class="font-mono text-emerald-400/70 w-14 flex-shrink-0">${new Date().toLocaleTimeString('en-US', { hour12: false, minute: '2-digit', second: '2-digit' })}</span>
+                <span class="flex-1">${message}</span>
+            `
+            logContainer.appendChild(entry)
+            logContainer.scrollTop = logContainer.scrollHeight
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = ''
+        }
+
+        // ==================== CONTROL FUNCTIONS ====================
+        async function startVisualization(algo = 'backtracking') {
+            if (isRunning) return
+
+            activeAlgorithm = algo
+            isRunning = true
+            aborted = false
+            stepCount = 0
+
+            const overlay = document.getElementById('status-overlay')
+            overlay.classList.remove('hidden')
+
+            if (algo === 'dp') {
+                overlay.className = 'absolute bottom-4 md:bottom-8 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-xs md:text-sm font-medium px-4 md:px-6 py-2 md:py-0 md:h-11 rounded-3xl shadow-2xl flex items-center gap-x-2 transition-all w-[90%] sm:w-auto justify-center'
+                overlay.innerHTML = `<div class="w-2 h-2 bg-white rounded-full animate-pulse shrink-0"></div><span class="truncate">DYNAMIC PROGRAMMING IN PROGRESS...</span><span id="step-counter" class="ml-1 md:ml-3 font-mono bg-white/20 px-2 md:px-3 rounded-3xl text-[10px] md:text-xs py-px shrink-0">Step 0</span>`
+            } else {
+                overlay.className = 'absolute bottom-4 md:bottom-8 left-1/2 -translate-x-1/2 bg-emerald-600 text-white text-xs md:text-sm font-medium px-4 md:px-6 py-2 md:py-0 md:h-11 rounded-3xl shadow-2xl flex items-center gap-x-2 transition-all w-[90%] sm:w-auto justify-center'
+                overlay.innerHTML = `<div class="w-2 h-2 bg-white rounded-full animate-pulse shrink-0"></div><span class="truncate">BACKTRACKING IN PROGRESS...</span><span id="step-counter" class="ml-1 md:ml-3 font-mono bg-white/20 px-2 md:px-3 rounded-3xl text-[10px] md:text-xs py-px shrink-0">Step 0</span>`
+            }
+
+            // Reset state
+            path = new Array(N).fill(-1)
+            hasCycle = false
+            currentDPMask = 0
+            currentDPEdge = { i: -1, j: -1 }
+            clearLog()
+
+            let found = false;
+
+            if (algo === 'dp') {
+                log(`<span class="font-medium">Starting DP (Held-Karp) from vertex <span class="text-blue-400">${currentStart}</span></span>`)
+                draw()
+                found = await hamCycleDP(currentStart)
+            } else {
+                path[0] = currentStart
+                log(`<span class="font-medium">Starting backtracking from vertex <span class="text-emerald-400">${currentStart}</span></span>`)
+                draw()
+                found = await hamCycle(1)
+            }
+
+            isRunning = false
+            document.getElementById('status-overlay').classList.add('hidden')
+
+            if (!found && !aborted) {
+                log(`<span class="text-amber-400">No cycle found starting from ${currentStart}</span> (this graph contains one from vertex 0)`, false)
+            }
+        }
+
+        function stopVisualization() {
+            if (!isRunning) return
+            aborted = true
+            isRunning = false
+            document.getElementById('status-overlay').classList.add('hidden')
+            log(`<span class="text-red-400">Animation stopped by user</span>`)
+        }
+
+        function resetVisualization() {
+            isRunning = false
+            aborted = false
+            path = new Array(N).fill(-1)
+            hasCycle = false
+            stepCount = 0
+            activeAlgorithm = 'none'
+            currentDPMask = 0
+            currentDPEdge = { i: -1, j: -1 }
+            document.getElementById('status-overlay').classList.add('hidden')
+            clearLog()
+            draw()
+            updatePathDisplay(0)
+            log('Visualization reset — ready to start again', false)
+        }
+
+        function setStartVertex(v) {
+            currentStart = v
+            // Highlight active button
+            document.querySelectorAll('#start-buttons button').forEach(btn => {
+                if (parseInt(btn.dataset.value) === v) {
+                    btn.classList.add('!bg-emerald-400', '!text-zinc-950')
+                    btn.classList.remove('bg-zinc-800')
+                } else {
+                    btn.classList.remove('!bg-emerald-400', '!text-zinc-950')
+                    btn.classList.add('bg-zinc-800')
+                }
+            })
+        }
+
+        function buildStartButtons() {
+            const container = document.getElementById('start-buttons')
+            container.innerHTML = ''
+            for (let i = 0; i < N; i++) {
+                const btn = document.createElement('button')
+                btn.className = `flex-1 h-10 rounded-3xl text-sm font-semibold transition-all ${i === 0 ? '!bg-emerald-400 !text-zinc-950' : 'bg-zinc-800'}`
+                btn.textContent = i
+                btn.dataset.value = i
+                btn.onclick = () => setStartVertex(i)
+                container.appendChild(btn)
+            }
+        }
+
+        function buildAdjMatrix() {
+            const container = document.getElementById('adj-matrix')
+            let html = `<table class="w-full text-center font-mono">`
+            html += `<tr><th class="pb-2"></th>`
+            for (let i = 0; i < N; i++) html += `<th class="pb-2 w-8">${i}</th>`
+            html += `</tr>`
+
+            for (let i = 0; i < N; i++) {
+                html += `<tr><td class="pr-4 font-bold text-emerald-300">${i}</td>`
+                for (let j = 0; j < N; j++) {
+                    const val = adj[i][j] ? '1' : '0'
+                    const color = adj[i][j] ? 'text-emerald-400' : 'text-zinc-500'
+                    html += `<td class="${color}">${val}</td>`
+                }
+                html += `</tr>`
+            }
+            html += `</table>`
+            container.innerHTML = html
+        }
+
+        function showInfo() {
+            document.getElementById('info-modal').classList.remove('hidden')
+            document.getElementById('info-modal').classList.add('flex')
+        }
+
+        function hideInfo() {
+            const modal = document.getElementById('info-modal')
+            modal.classList.add('hidden')
+            modal.classList.remove('flex')
+        }
+
+        function showTheory() {
+            document.getElementById('theory-modal').classList.remove('hidden')
+            document.getElementById('theory-modal').classList.add('flex')
+        }
+
+        function hideTheory() {
+            const modal = document.getElementById('theory-modal')
+            modal.classList.add('hidden')
+            modal.classList.remove('flex')
+        }
+
+        function switchInfoTab(tab) {
+            if (tab === 'backtrack') {
+                document.getElementById('tab-backtrack').className = 'font-medium text-emerald-400 bg-white/5 px-4 py-2 rounded-2xl';
+                document.getElementById('tab-dp').className = 'font-medium text-zinc-500 hover:text-white px-4 py-2 rounded-2xl transition-colors';
+                document.getElementById('info-backtrack').classList.remove('hidden');
+                document.getElementById('info-dp').classList.add('hidden');
+            } else {
+                document.getElementById('tab-dp').className = 'font-medium text-blue-400 bg-white/5 px-4 py-2 rounded-2xl';
+                document.getElementById('tab-backtrack').className = 'font-medium text-zinc-500 hover:text-white px-4 py-2 rounded-2xl transition-colors';
+                document.getElementById('info-dp').classList.remove('hidden');
+                document.getElementById('info-backtrack').classList.add('hidden');
+            }
+        }
+
+        // ==================== GRAPH EDITOR ====================
+        let tempN = 5;
+        let tempAdj = [];
+
+        function openGraphEditor() {
+            if (isRunning) stopVisualization();
+            tempN = N;
+            tempAdj = adj.map(row => [...row]);
+            document.getElementById('editor-n-slider').value = tempN;
+            document.getElementById('editor-n-display').textContent = tempN;
+            updateEditorMatrix();
+            document.getElementById('editor-modal').classList.remove('hidden');
+            document.getElementById('editor-modal').classList.add('flex');
+        }
+
+        function hideGraphEditor() {
+            document.getElementById('editor-modal').classList.add('hidden');
+            document.getElementById('editor-modal').classList.remove('flex');
+        }
+
+        function updateEditorMatrix() {
+            const newN = parseInt(document.getElementById('editor-n-slider').value);
+            document.getElementById('editor-n-display').textContent = newN;
+
+            if (newN > tempN) {
+                for (let i = 0; i < tempN; i++) {
+                    while (tempAdj[i].length < newN) tempAdj[i].push(false);
+                }
+                while (tempAdj.length < newN) {
+                    tempAdj.push(new Array(newN).fill(false));
+                }
+            } else if (newN < tempN) {
+                tempAdj = tempAdj.slice(0, newN).map(row => row.slice(0, newN));
+            }
+            tempN = newN;
+
+            const container = document.getElementById('editor-matrix-container');
+            let html = `<table class="text-center font-mono text-xs border-collapse">`;
+            html += `<tr><th class="p-1.5 min-w-[28px]"></th>`;
+            for (let i = 0; i < tempN; i++) html += `<th class="p-1.5 min-w-[28px] text-zinc-500">${i}</th>`;
+            html += `</tr>`;
+
+            for (let i = 0; i < tempN; i++) {
+                html += `<tr><th class="p-1.5 text-zinc-500 min-w-[28px]">${i}</th>`;
+                for (let j = 0; j < tempN; j++) {
+                    if (i === j) {
+                        html += `<td class="p-1.5"><div class="w-6 h-6 flex items-center justify-center bg-zinc-800 text-zinc-700 rounded">-</div></td>`;
+                    } else {
+                        const active = tempAdj[i][j];
+                        const colorClass = active ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/50' : 'bg-black/50 text-zinc-600 border border-white/5 hover:border-white/20 hover:bg-zinc-800';
+                        html += `<td class="p-1"><button onclick="toggleTempEdge(${i},${j})" class="w-6 h-6 rounded border transition-colors flex items-center justify-center ${colorClass}">${active ? '1' : '0'}</button></td>`;
+                    }
+                }
+                html += `</tr>`;
+            }
+            html += `</table>`;
+            container.innerHTML = html;
+        }
+
+        function toggleTempEdge(i, j) {
+            tempAdj[i][j] = !tempAdj[i][j];
+            tempAdj[j][i] = tempAdj[i][j];
+            updateEditorMatrix();
+        }
+
+        function applyCustomGraph() {
+            N = tempN;
+            adj = tempAdj.map(row => [...row]);
+
+            initPositions();
+            buildStartButtons();
+            buildAdjMatrix();
+            document.querySelector('.bg-amber-400').textContent = `${N} VERTICES`;
+
+            path = new Array(N).fill(-1);
+            setStartVertex(0);
+            resetVisualization();
+            hideGraphEditor();
+            log(`<span class="text-emerald-400">Graph updated:</span> ${N} vertices configuration applied.`, true);
+        }
+
+        // ==================== INITIALIZE ====================
+        function initializeTailwind() {
+            return {
+                config(userConfig = {}) {
+                    return {
+                        content: [],
+                        theme: {
+                            extend: {}
+                        },
+                        plugins: [],
+                        ...userConfig,
+                    }
+                },
+                theme: {
+                    extend: {},
+                }
+            }
+        }
+
+        window.onload = function () {
+            // Tailwind
+            document.documentElement.setAttribute('data-tailwind-config', JSON.stringify(initializeTailwind()))
+
+            canvas = document.getElementById('graph')
+            ctx = canvas.getContext('2d')
+
+            initPositions()
+            buildStartButtons()
+            buildAdjMatrix()
+
+            // Speed slider
+            const slider = document.getElementById('speed-slider')
+            const speedDisplay = document.getElementById('speed-value')
+
+            slider.addEventListener('input', () => {
+                speed = parseInt(slider.value)
+                speedDisplay.textContent = `${speed} ms`
+            })
+
+            // Initial draw
+            draw()
+            updatePathDisplay(0)
+
+            console.log('%cHamiltonian Cycle Backtracking Visualizer ready!', 'color:#10b981; font-family:monospace')
+            log('Welcome! Click <span class="text-emerald-400">START BACKTRACKING</span> to begin the animation.', false)
+        }
+    </script>
+</body>
+
+</html>
